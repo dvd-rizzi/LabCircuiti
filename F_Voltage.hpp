@@ -13,6 +13,14 @@
 #include <TStyle.h>
 #include <vector>
 
+struct parameters
+{
+    double R;
+    double L;
+    double C;
+    double R_L;
+    double R_v;
+};
 
-void voltage_function(double R, double L, double C, double R_L, double R_v);
+void voltage_function(parameters p);
 
