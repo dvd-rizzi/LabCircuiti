@@ -12,6 +12,7 @@
 #include <iostream>
 #include <TStyle.h>
 #include <vector>
+#include <TMath.h>
 
 struct parameters
 {
@@ -23,4 +24,6 @@ struct parameters
 };
 
 void voltage_function(parameters p);
+
+void response_function(parameters p);
 
