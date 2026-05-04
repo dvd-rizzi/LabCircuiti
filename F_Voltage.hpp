@@ -13,9 +13,11 @@
 #include <TStyle.h>
 #include <vector>
 #include <TMath.h>
+#include <TString.h>
 
 struct parameters
 {
+    TString name;
     double R;
     double L;
     double C;
@@ -26,4 +28,6 @@ struct parameters
 void voltage_function(parameters p);
 
 void response_function(parameters p);
+
+void fit(parameters p);
 
