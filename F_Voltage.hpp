@@ -29,5 +29,6 @@ void voltage_function(parameters p);
 
 void response_function(parameters p);
 
-void fit(parameters p);
+void v_fit(parameters p);
 
+void r_fit(parameters p);
