@@ -81,6 +81,7 @@ void v_fit(parameters p) {
   v_function->SetParameter(4, p.R_v);
 
   TCanvas *c3 = new TCanvas("c3", "v_function_fit", 800, 600);
+  v_function->SetRange(2000, 13000);
   dataset->Fit("v_function", "R");
   dataset->Draw("APE");
   dataset->SetLineColor(4);
