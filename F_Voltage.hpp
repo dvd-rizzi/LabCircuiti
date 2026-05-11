@@ -14,6 +14,7 @@
 #include <vector>
 #include <TMath.h>
 #include <TString.h>
+#include <iostream>
 
 struct parameters
 {
@@ -32,3 +33,5 @@ void response_function(parameters p);
 void v_fit(parameters p);
 
 void r_fit(parameters p);
+
+void gaussian_error(const std::string& file);

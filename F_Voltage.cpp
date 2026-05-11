@@ -1,3 +1,5 @@
+// Wow! Che bel codice!
+
 #include "F_Voltage.hpp"
 
 void voltage_function(parameters p) {
@@ -47,8 +49,29 @@ void response_function(parameters p) {
   c2->SaveAs("response_function.pdf");
 }
 
+void gaussian_error(const std::string& file) {
+  TH1D *hist = new TH1D("hist", "Occorrenze nel voltaggio", 15, 4.919, 4.926);
+  double value;
+  std::ifstream inputFile(file);
+
+  if (inputFile.is_open()) {
+    while (inputFile >> value) {
+      hist->Fill(value);
+    }
+    inputFile.close();
+  } else {
+    std::cerr << "Errore: Impossibile aprire il file!" << '\n';
+    return;
+  }
+  hist->Fit("gaus");
+
+  TCanvas *c_h = new TCanvas("c_h", "Istogramma voltaggio fissato", 800, 600);
+  hist->Draw("");
+  c_h->SaveAs("Istogramma.pdf");
+}
+
 void v_fit(parameters p) {
-  TGraphErrors *dataset = new TGraphErrors(p.name, "%lg %lg %lg");
+  TGraphErrors *dataset = new TGraphErrors(p.name, "%lg %*lg %lg %lg");
   TF1 *v_function = (TF1 *)gROOT->GetFunction("v_function");
   v_function->SetParameter(0, p.R);
   v_function->SetParameter(1, p.L);
