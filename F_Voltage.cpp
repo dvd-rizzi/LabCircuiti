@@ -9,7 +9,7 @@ void voltage_function(parameters p) {
   c1->SetGrid();
   TF1 *v_function = new TF1(
       "v_function",
-      "5*([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
+      "[5]*([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
       "(2*pi*x*[2]*[3])^2))/sqrt((([4]+[0])*(1-(pow(2*pi*x,2))*[1]*[2]) + "
       "[3])^2 + (2*pi*x*([1]+[2]*[3]*([4]+[0])))^2)",
       1000, 15000);
@@ -18,6 +18,7 @@ void voltage_function(parameters p) {
   v_function->SetParameter(2, p.C);
   v_function->SetParameter(3, p.R_L);
   v_function->SetParameter(4, p.R_v);
+  v_function->SetParameter(5, 2.5);
   v_function->SetNpx(10000);
   v_function->SetTitle("Funzione Voltaggio");
   v_function->Draw();
@@ -50,7 +51,7 @@ void response_function(parameters p) {
 }
 
 void gaussian_error(const std::string& file) {
-  TH1D *hist = new TH1D("hist", "Occorrenze nel voltaggio", 15, 4.919, 4.926);
+  TH1D *hist = new TH1D("hist", "Occorrenze nel voltaggio", 22, 4.919, 4.926);
   double value;
   std::ifstream inputFile(file);
 
