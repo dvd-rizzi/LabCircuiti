@@ -15,6 +15,7 @@
 #include <TMath.h>
 #include <TString.h>
 #include <iostream>
+#include <cmath>
 
 struct parameters
 {
@@ -35,3 +36,5 @@ void v_fit(parameters p);
 void r_fit(parameters p);
 
 void gaussian_error(const std::string& file);
+
+void multifit(parameters p1, parameters p2, parameters p3);
