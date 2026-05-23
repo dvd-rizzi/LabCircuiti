@@ -20,6 +20,14 @@ void cool_graph() {
     double voltaggio_costante = 2.25; 
 
     while (infile >> freq >> volt >> fase) {
+
+        while (fase > 180.0) {
+            fase -= 360.0;
+        }
+        while (fase < -180.0) {
+            fase += 360.0;
+        }
+        
         graph->SetPoint(i, freq, volt, fase);          
         proj_volt->SetPoint(i, freq, volt, fase_costante); 
         proj_fase->SetPoint(i, freq, voltaggio_costante, fase); 
@@ -40,7 +48,7 @@ void cool_graph() {
         proj_fase->SetPoint(k, f, v_max, p);
     }
 
-    graph->SetTitle("Ampiezza e Fase vs Frequenza;Frequenza (Hz);V_R (V);Phase (rad)");
+    graph->SetTitle("Ampiezza e Fase in Frequenza;Frequenza (Hz);V_R (V);Phase (rad)");
     graph->SetMarkerStyle(20);
     graph->SetMarkerSize(0.6);
 
