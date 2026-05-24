@@ -80,8 +80,8 @@ void v_fit(parameters p) {
   v_function->SetParameter(3, p.R_L);
   v_function->SetParameter(4, p.R_v);
   v_function->SetParameter(5, 2.5);
-  v_function->SetParLimits(0, p.R -p.R*0.05, p.R +p.R*0.05);
-  v_function->SetParLimits(4, p.R_v - p.R_v*0.05, p.R + p.R_v*0.05);
+  v_function->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
+  v_function->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
 
   TCanvas *c3 = new TCanvas("c3", "v_function_fit", 800, 600);
   v_function->SetRange(2000, 13000);
@@ -113,7 +113,8 @@ void v_fit(parameters p) {
 
   std::cout << "NDF = " << v_function->GetNDF() << '\n';
 
-  std::cout << "Chi2/NDF = " << v_function->GetChisquare() / v_function->GetNDF() << '\n';
+  std::cout << "Chi2/NDF = "
+            << v_function->GetChisquare() / v_function->GetNDF() << '\n';
 
   dataset->Draw("APE");
   dataset->SetLineColor(4);
@@ -156,8 +157,8 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   TGraphErrors *dataset1 = new TGraphErrors(p1.name, "%lg %*lg %lg %lg");
   TGraphErrors *dataset2 = new TGraphErrors(p2.name, "%lg %*lg %lg %lg");
   TGraphErrors *dataset3 = new TGraphErrors(p3.name, "%lg %*lg %lg %lg");
-  
-   TF1 *f1 = new TF1(
+
+  TF1 *f1 = new TF1(
       "f1",
       "[5]*([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
       "(2*pi*x*[2]*[3])^2))/sqrt((([4]+[0])*(1-(pow(2*pi*x,2))*[1]*[2]) + "
@@ -173,34 +174,32 @@ void multifit(parameters p1, parameters p2, parameters p3) {
     f->SetParameter(3, p.R_L);
     f->SetParameter(4, p.R_v);
     f->SetParameter(5, 2.5);
-    f->SetParLimits(0, p.R -p.R*0.05, p.R +p.R*0.05);
-    f->SetParLimits(4, p.R_v - p.R_v*0.05, p.R + p.R_v*0.05);
+    f->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
+    f->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
     f->SetNpx(10000);
   };
 
   set_parameters(f1, p1);
   set_parameters(f2, p2);
   set_parameters(f3, p3);
-  
+
   dataset1->Fit(f1, "R");
   dataset2->Fit(f2, "R");
   dataset3->Fit(f3, "R");
 
-
   dataset1->SetMarkerColor(kBlue);
-  dataset1->SetLineColor(kCyan); 
-  f1->SetLineColor(kBlue);      
+  dataset1->SetLineColor(kCyan);
+  f1->SetLineColor(kBlue);
 
   dataset2->SetMarkerColor(kRed);
-  dataset2->SetLineColor(kOrange+7); 
-  f2->SetLineColor(kRed);            
+  dataset2->SetLineColor(kOrange + 7);
+  f2->SetLineColor(kRed);
 
-  dataset3->SetMarkerColor(kGreen+2);
-  dataset3->SetLineColor(kSpring);  
-  f3->SetLineColor(kGreen+2);
-  
+  dataset3->SetMarkerColor(kGreen + 2);
+  dataset3->SetLineColor(kSpring);
+  f3->SetLineColor(kGreen + 2);
+
   TCanvas *c_multi = new TCanvas("c_multi", "MultiFit", 800, 600);
-
 
   c_multi->SetGrid();
 
@@ -219,8 +218,7 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   f2->Draw("SAME");
   f3->Draw("SAME");
 
-  TLegend *leg =
-      new TLegend(0.70, 0.15, 0.88, 0.30);
+  TLegend *leg = new TLegend(0.70, 0.15, 0.88, 0.30);
 
   leg->AddEntry(dataset1, "R = 100 #Omega", "lp");
   leg->AddEntry(dataset2, "R = 330 #Omega", "lp");
@@ -229,6 +227,57 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   leg->Draw();
 
   c_multi->SaveAs("multi_fit.pdf");
+}
 
+void time_graph(const std::string &file) {
+  std::vector<double> time_vec;
+  std::vector<double> v_IN_vec;
+  std::vector<double> v_R_vec;
+  double time;
+  double v_IN;
+  double v_R;
 
+  std::ifstream inputFile(file);
+
+  if (inputFile.is_open()) {
+    while (inputFile >> time >> v_IN >> v_R) {
+      time_vec.push_back(time);
+      v_IN_vec.push_back(v_IN);
+      v_R_vec.push_back(v_R);
+    }
+    inputFile.close();
+  } else {
+    std::cerr << "Errore: Impossibile aprire il file!" << '\n';
+    return;
+  }
+  
+  TCanvas *timegraph = new TCanvas("timegraph", "Ampiezza voltaggio in funzione del tempo", 800, 600);
+  
+  TGraph *time_graph_v_IN = new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
+
+  time_graph_v_IN->GetXaxis()->SetLimits(0.002245 , 0.002745 );
+
+  TGraph *time_graph_v_R = new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
+
+  time_graph_v_IN->SetTitle("Ampiezza del voltaggio ai capi del generatore e della resistenza");
+  time_graph_v_IN->SetLineColor(kBlue + 1);
+  time_graph_v_IN->SetMarkerColor(kBlue + 1);
+  time_graph_v_IN->SetLineWidth(2);
+  time_graph_v_IN->SetMarkerStyle(20);
+
+  time_graph_v_R->SetLineColor(kRed +1);
+  time_graph_v_R->SetMarkerColor(kRed +1);
+  time_graph_v_R->SetLineWidth(2);
+  time_graph_v_R->SetMarkerStyle(20);
+
+  time_graph_v_IN->Draw("ALP");
+  time_graph_v_R->Draw("LP SAME");
+
+  TLegend *leg = new TLegend(0.7, 0.75, 0.88, 0.88);
+  leg->AddEntry(time_graph_v_IN, "V_{IN}", "lp");
+  leg->AddEntry(time_graph_v_R, "V_{R}", "lp");
+  leg->Draw();
+
+  timegraph->SaveAs("TimeGraph.pdf");
+  
 }

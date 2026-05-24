@@ -38,3 +38,5 @@ void r_fit(parameters p);
 void gaussian_error(const std::string& file);
 
 void multifit(parameters p1, parameters p2, parameters p3);
+
+void time_graph(const std::string &file);

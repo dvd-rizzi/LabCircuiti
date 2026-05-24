@@ -5,7 +5,7 @@
 
 // Compilazione:
 // g++ -std=c++17 -O2 plot_circuiti.cpp $(root-config --cflags --libs) -o plot_circuiti
-
+#include "F_Voltage.hpp"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -17,7 +17,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 
-void Circuiti(const char* filename = "2-7_3-12(20K_n_samples)-Filtrati.txt",
+void Circuiti(const char* filename = "Dati_Mic/2-7.3-12(20K_n_samples)",
               const char* outpng   = "graph.png")
 {
     std::ifstream fin(filename);
@@ -68,6 +68,12 @@ void Circuiti(const char* filename = "2-7_3-12(20K_n_samples)-Filtrati.txt",
         &vvin[0]
     );
 
+    gr_in->GetXaxis()->SetLimits(7000, 8000);
+    gr_in->GetYaxis()->SetLimits(0, 0.1);
+    gr_in->SetMinimum(0);
+    gr_in->SetMaximum(0.1);
+
+
     gr_in->SetTitle("V_{IN} e V_{R} vs Frequenza;Frequenza [Hz];Tensione [V]");
     gr_in->SetLineColor(kBlue + 1);
     gr_in->SetMarkerColor(kBlue + 1);
@@ -80,6 +86,13 @@ void Circuiti(const char* filename = "2-7_3-12(20K_n_samples)-Filtrati.txt",
         &vfreq[0],
         &vvr[0]
     );
+
+    gr_out->GetXaxis()->SetLimits(7000, 8000);
+    gr_out->GetYaxis()->SetLimits(0, 0.1);
+    gr_out->SetMinimum(0);
+    gr_out->SetMaximum(0.1);
+
+
 
     gr_out->SetLineColor(kRed + 1);
     gr_out->SetMarkerColor(kRed + 1);
