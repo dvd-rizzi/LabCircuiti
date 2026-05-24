@@ -1,4 +1,4 @@
-// File: plot_circuiti.cpp
+// File: Circuiti.C
 // Legge un file con tre colonne:
 // Frequenza   V_IN   V_OUT
 // e disegna V_IN e V_OUT in funzione della frequenza.
