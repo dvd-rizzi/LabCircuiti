@@ -17,7 +17,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 
-void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
+void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
 {
     std::ifstream fin(filename);
 
@@ -67,21 +67,23 @@ void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
         &vvin[0]
     );
 
-    double x_min = 7550;
-    double x_max = 7650;
+    double x_min = 9900;
+    double x_max = 10100;
+
+    double y_min = 0.;
+    double y_max = 0.035;
 
     gr_in->GetXaxis()->SetLimits(x_min, x_max);
-    gr_in->GetYaxis()->SetLimits(0, 0.1);
-    gr_in->SetMinimum(0);
-    gr_in->SetMaximum(0.1);
-
-
+    gr_in->SetMinimum(y_min);
+    gr_in->SetMaximum(y_max);
+    
+    
     gr_in->SetTitle("V_{IN} e V_{R} vs Frequenza;Frequenza [Hz];Tensione [V]");
     gr_in->SetLineColor(kBlue + 1);
     gr_in->SetMarkerColor(kBlue + 1);
     gr_in->SetLineWidth(2);
     gr_in->SetMarkerStyle(20);
-
+    
     // Grafico V_OUT
     TGraph* gr_out = new TGraph(
         vfreq.size(),
@@ -90,28 +92,28 @@ void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
     );
 
     gr_out->GetXaxis()->SetLimits(x_min, x_max);
-    gr_out->GetYaxis()->SetLimits(0, 0.1);
-    gr_out->SetMinimum(0);
-    gr_out->SetMaximum(0.1);
-
-
-
+    gr_out->SetMinimum(y_min);
+    gr_out->SetMaximum(y_max);
+    
+    
+    
     gr_out->SetLineColor(kRed + 1);
     gr_out->SetMarkerColor(kRed + 1);
     gr_out->SetLineWidth(2);
     gr_out->SetMarkerStyle(21);
 
-    // Disegno
     gr_in->Draw("ALP");
     gr_out->Draw("LP SAME");
+    
 
-    // Legenda
+
     TLegend* leg = new TLegend(0.7, 0.75, 0.88, 0.88);
     leg->AddEntry(gr_in, "V_{IN}", "lp");
     leg->AddEntry(gr_out, "V_{R}", "lp");
     leg->Draw();
 
     c->SaveAs("Mic.pdf");
+  
 
 }
 
