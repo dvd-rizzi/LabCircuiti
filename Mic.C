@@ -17,8 +17,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 
-void Circuiti(const char* filename = "Dati_Mic/2-7.3-12(20K_n_samples)",
-              const char* outpng   = "graph.png")
+void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
 {
     std::ifstream fin(filename);
 
@@ -68,7 +67,10 @@ void Circuiti(const char* filename = "Dati_Mic/2-7.3-12(20K_n_samples)",
         &vvin[0]
     );
 
-    gr_in->GetXaxis()->SetLimits(7000, 8000);
+    double x_min = 7550;
+    double x_max = 7650;
+
+    gr_in->GetXaxis()->SetLimits(x_min, x_max);
     gr_in->GetYaxis()->SetLimits(0, 0.1);
     gr_in->SetMinimum(0);
     gr_in->SetMaximum(0.1);
@@ -87,7 +89,7 @@ void Circuiti(const char* filename = "Dati_Mic/2-7.3-12(20K_n_samples)",
         &vvr[0]
     );
 
-    gr_out->GetXaxis()->SetLimits(7000, 8000);
+    gr_out->GetXaxis()->SetLimits(x_min, x_max);
     gr_out->GetYaxis()->SetLimits(0, 0.1);
     gr_out->SetMinimum(0);
     gr_out->SetMaximum(0.1);
@@ -109,19 +111,17 @@ void Circuiti(const char* filename = "Dati_Mic/2-7.3-12(20K_n_samples)",
     leg->AddEntry(gr_out, "V_{R}", "lp");
     leg->Draw();
 
-    c->SaveAs(outpng);
+    c->SaveAs("Mic.pdf");
 
-    std::cout << "Grafico salvato in: "
-              << outpng << "\n";
 }
 
-int main(int argc, char** argv)
-{
-    std::cout << "Inizio programma...\n";
+// int main(int argc, char** argv)
+// {
+//     std::cout << "Inizio programma...\n";
 
-    Circuiti();
+//     Mic();
 
-    std::cout << "Fine.\n";
+//     std::cout << "Fine.\n";
 
-    return 0;
-}
+//     return 0;
+// }

@@ -7,7 +7,7 @@ void cool_graph() {
     TGraph2D *proj_volt = new TGraph2D();
     TGraph2D *proj_fase = new TGraph2D();
 
-    std::ifstream infile("Grafico3D/Test1(Sweep2_560)");
+    std::ifstream infile("Grafico3D/Sweep1_330");
     if (!infile.is_open()) {
         std::cerr << "Error: file not found!" << std::endl;
         return;
