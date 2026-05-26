@@ -83,13 +83,21 @@ void v_fit(parameters p) {
   v_function->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
   v_function->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
 
+  v_function->SetParName(0, "R");
+  v_function->SetParName(1, "L");
+  v_function->SetParName(2, "C");
+  v_function->SetParName(3, "R_L");
+  v_function->SetParName(4, "R_v");
+  v_function->SetParName(5, "V_0");
+
+
   TCanvas *c3 = new TCanvas("c3", "v_function_fit", 800, 600);
   v_function->SetRange(2000, 13000);
   dataset->Fit("v_function", "R");
 
   int N = dataset->GetN();
   double sum_2{0.};
-  for (int i; i < N; ++i) {
+  for (int i = 0; i < N; ++i) {
     double x;
     double y;
     dataset->GetPoint(i, x, y);
@@ -124,7 +132,7 @@ void v_fit(parameters p) {
   dataset->GetXaxis()->SetTitle("Frequenza (Hz)");
   dataset->GetYaxis()->SetTitle("Voltaggio (V)");
   dataset->GetXaxis()->CenterTitle(true);
-  dataset->GetXaxis()->CenterTitle(true);
+  dataset->GetYaxis()->CenterTitle(true);
 
   c3->SaveAs("v_function_fit.pdf");
 }
@@ -177,6 +185,14 @@ void multifit(parameters p1, parameters p2, parameters p3) {
     f->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
     f->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
     f->SetNpx(10000);
+
+    f->SetParName(0, "R");
+    f->SetParName(1, "L");
+    f->SetParName(2, "C");
+    f->SetParName(3, "R_L");
+    f->SetParName(4, "R_v");
+    f->SetParName(5, "V_0");
+
   };
 
   set_parameters(f1, p1);
