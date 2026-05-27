@@ -271,9 +271,11 @@ void time_graph(const std::string &file) {
   
   TGraph *time_graph_v_IN = new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
 
-  time_graph_v_IN->GetXaxis()->SetLimits(0.002245 , 0.002745 );
+  time_graph_v_IN->GetXaxis()->SetLimits(0.0017 , 0.0020 );
 
   TGraph *time_graph_v_R = new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
+
+  timegraph->SetGrid();
 
   time_graph_v_IN->SetTitle("Ampiezza del voltaggio ai capi del generatore e della resistenza");
   time_graph_v_IN->SetLineColor(kBlue + 1);
