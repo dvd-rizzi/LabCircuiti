@@ -27,28 +27,28 @@ void voltage_function(parameters p) {
   c1->SaveAs("voltage_function.pdf");
 }
 
-// void response_function(parameters p) {
-//   TCanvas *c2 = new TCanvas("c2", "response_function", 800, 600);
-//   c2->SetFillColor(0);
-//   c2->SetGrid();
-//   TF1 *v_function = new TF1(
-//       "R_function",
-//       "([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
-//       "(2*pi*x*[2]*[3])^2))/sqrt((([4]+[0])*(1-(pow(2*pi*x,2))*[1]*[2]) + "
-//       "[3])^2 + (2*pi*x*([1]+[2]*[3]*([4]+[0])))^2)",
-//       1000, 15000);
-//   v_function->SetParameter(0, p.R);
-//   v_function->SetParameter(1, p.L);
-//   v_function->SetParameter(2, p.C);
-//   v_function->SetParameter(3, p.R_L);
-//   v_function->SetParameter(4, p.R_v);
-//   v_function->SetNpx(10000);
-//   v_function->SetTitle("Funzione di Risposta");
-//   v_function->Draw();
-//   v_function->GetXaxis()->SetTitle("Frequenza (Hz)");
-//   v_function->GetYaxis()->SetTitle("mod(H)");
-//   c2->SaveAs("response_function.pdf");
-// }
+void response_function(parameters p) {
+  TCanvas *c2 = new TCanvas("c2", "response_function", 800, 600);
+  c2->SetFillColor(0);
+  c2->SetGrid();
+  TF1 *r_function = new TF1(
+      "r_function",
+      "([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
+      "(2*pi*x*[2]*[3])^2))/sqrt((([4]+[0])*(1-(pow(2*pi*x,2))*[1]*[2]) + "
+      "[3])^2 + (2*pi*x*([1]+[2]*[3]*([4]+[0])))^2)",
+      2000, 13000);
+  r_function->SetParameter(0, p.R);
+  r_function->SetParameter(1, p.L);
+  r_function->SetParameter(2, p.C);
+  r_function->SetParameter(3, p.R_L);
+  r_function->SetParameter(4, p.R_v);
+  r_function->SetNpx(10000);
+  r_function->SetTitle("Funzione di Risposta");
+  r_function->Draw();
+  r_function->GetXaxis()->SetTitle("Frequenza (Hz)");
+  r_function->GetYaxis()->SetTitle("mod(H)");
+  c2->SaveAs("response_function.pdf");
+}
 
 void gaussian_error(const std::string &file) {
   TH1D *hist = new TH1D("hist", "Occorrenze nel voltaggio", 22, 4.919, 4.926);
@@ -90,7 +90,6 @@ void v_fit(parameters p) {
   v_function->SetParName(4, "R_v");
   v_function->SetParName(5, "V_0");
 
-
   TCanvas *c3 = new TCanvas("c3", "v_function_fit", 800, 600);
   v_function->SetRange(2000, 13000);
   dataset->Fit("v_function", "R");
@@ -109,7 +108,7 @@ void v_fit(parameters p) {
   int N_par = v_function->GetNpar();
   double sigma_real = std::sqrt(sum_2 / (N - N_par));
 
-  std::cout << "\n========== ANALISI RESIDUI ==========\n";
+  std::cout << "\n========== ANALISI RESIDUI Voltage_function ==========\n";
 
   std::cout << "Numero punti = " << N << '\n';
 
@@ -137,29 +136,76 @@ void v_fit(parameters p) {
   c3->SaveAs("v_function_fit.pdf");
 }
 
-// void r_fit(parameters p) {
-//   TGraphErrors *dataset = new TGraphErrors(p.name, "%lg %lg %lg");
-//   TF1 *r_function = (TF1 *)gROOT->GetFunction("r_function");
-//   r_function->SetParameter(0, p.R);
-//   r_function->SetParameter(1, p.L);
-//   r_function->SetParameter(2, p.C);
-//   r_function->SetParameter(3, p.R_L);
-//   r_function->SetParameter(4, p.R_v);
+void r_fit(parameters p) {
+  TGraphErrors *dataset = new TGraphErrors(p.name, "%lg %*lg %lg %lg");
+  TF1 *r_function = (TF1 *)gROOT->GetFunction("r_function");
 
-//   TCanvas *c3 = new TCanvas("c3", "r_function_fit", 800, 600);
-//   dataset->Fit("r_function", "R");
-//   dataset->Draw("APE");
-//   dataset->SetLineColor(4);
-//   dataset->SetMarkerColor(4);
-//   r_function->Draw("same");
-//   dataset->SetTitle("Fit funzione di risposta");
-//   dataset->GetXaxis()->SetTitle("Modulo H(w)");
-//   dataset->GetYaxis()->SetTitle("Voltaggio (V)");
-//   dataset->GetXaxis()->CenterTitle(true);
-//   dataset->GetXaxis()->CenterTitle(true);
+  for (int i = 0; i < dataset->GetN(); ++i) {
+    double x, y;
+    dataset->GetPoint(i, x, y);
+    double errY = dataset->GetErrorY(i);
 
-//   c3->SaveAs("r_function_fit.pdf");
-// }
+    dataset->SetPoint(i, x, y / 2.5);
+    // dataset->SetPointError(i, 0, errY = (0.0015 + (y/2.5)*0.0015)/2.5);
+    dataset->SetPointError(i, 0, errY = 0.006);
+  }
+
+  r_function->SetParameter(0, p.R);
+  r_function->SetParameter(1, p.L);
+  r_function->SetParameter(2, p.C);
+  r_function->SetParameter(3, p.R_L);
+  r_function->SetParameter(4, p.R_v);
+
+  r_function->SetParName(0, "R");
+  r_function->SetParName(1, "L");
+  r_function->SetParName(2, "C");
+  r_function->SetParName(3, "R_L");
+  r_function->SetParName(4, "R_v");
+
+  dataset->Fit("r_function", "R");
+
+  int N = dataset->GetN();
+  double sum_2{0.};
+  for (int i = 0; i < N; ++i) {
+    double x;
+    double y;
+    dataset->GetPoint(i, x, y);
+    double f_value = r_function->Eval(x);
+    double residual = y - f_value;
+    sum_2 += residual * residual;
+  }
+
+  int N_par = r_function->GetNpar();
+  double sigma_real = std::sqrt(sum_2 / (N - N_par));
+
+  std::cout << "\n========== ANALISI RESIDUI Response_function ==========\n";
+
+  std::cout << "Numero punti = " << N << '\n';
+
+  std::cout << "Numero parametri = " << N_par << '\n';
+
+  std::cout << "Sigma_eff (RMS residui) = " << sigma_real << " V\n";
+
+  std::cout << "Chi2 = " << r_function->GetChisquare() << '\n';
+
+  std::cout << "NDF = " << r_function->GetNDF() << '\n';
+
+  std::cout << "Chi2/NDF = "
+            << r_function->GetChisquare() / r_function->GetNDF() << '\n';
+
+  TCanvas *c3 = new TCanvas("c3", "r_function_fit", 800, 600);
+  dataset->Draw("APE");
+  dataset->SetLineColor(4);
+  dataset->SetMarkerColor(4);
+  r_function->Draw("same");
+  dataset->SetTitle("Fit funzione di risposta");
+  dataset->GetXaxis()->SetTitle("Frequenza (Hz)");
+  dataset->GetYaxis()->SetTitle("|H(w)|");
+  dataset->GetXaxis()->CenterTitle(true);
+  dataset->GetXaxis()->CenterTitle(true);
+
+  c3->SaveAs("r_function_fit.pdf");
+}
 
 void multifit(parameters p1, parameters p2, parameters p3) {
   TGraphErrors *dataset1 = new TGraphErrors(p1.name, "%lg %*lg %lg %lg");
@@ -192,7 +238,6 @@ void multifit(parameters p1, parameters p2, parameters p3) {
     f->SetParName(3, "R_L");
     f->SetParName(4, "R_v");
     f->SetParName(5, "V_0");
-
   };
 
   set_parameters(f1, p1);
@@ -203,17 +248,33 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   dataset2->Fit(f2, "R");
   dataset3->Fit(f3, "R");
 
-  dataset1->SetMarkerColor(kBlue);
-  dataset1->SetLineColor(kCyan);
-  f1->SetLineColor(kBlue);
+  dataset1->SetMarkerStyle(20);
+  dataset1->SetMarkerSize(0.1);
+  dataset1->SetMarkerColorAlpha(kBlue + 2, 0.6);
+  dataset1->SetLineColorAlpha(kAzure + 7, 0.6);
+  dataset1->SetLineWidth(1);
 
-  dataset2->SetMarkerColor(kRed);
-  dataset2->SetLineColor(kOrange + 7);
-  f2->SetLineColor(kRed);
+  dataset2->SetMarkerStyle(20);
+  dataset2->SetMarkerSize(0.1);
+  dataset2->SetMarkerColorAlpha(kRed + 2, 0.6);
+  dataset2->SetLineColorAlpha(kOrange + 1, 0.6); 
+  dataset2->SetLineWidth(1);
 
-  dataset3->SetMarkerColor(kGreen + 2);
-  dataset3->SetLineColor(kSpring);
-  f3->SetLineColor(kGreen + 2);
+  dataset3->SetMarkerStyle(20);
+  dataset3->SetMarkerSize(0.1);
+  dataset3->SetMarkerColorAlpha(kGreen + 3, 0.6);
+  dataset3->SetLineColorAlpha(kSpring - 3, 0.6); 
+  dataset3->SetLineWidth(1);
+
+
+  f1->SetLineColor(kBlue + 2);
+  f1->SetLineWidth(2);
+
+  f2->SetLineColor(kRed+2);
+  f2->SetLineWidth(2);
+
+  f3->SetLineColor(kGreen+3);
+  f3->SetLineWidth(2);
 
   TCanvas *c_multi = new TCanvas("c_multi", "MultiFit", 800, 600);
 
@@ -233,6 +294,8 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   f1->Draw("SAME");
   f2->Draw("SAME");
   f3->Draw("SAME");
+
+  
 
   TLegend *leg = new TLegend(0.70, 0.15, 0.88, 0.30);
 
@@ -266,25 +329,29 @@ void time_graph(const std::string &file) {
     std::cerr << "Errore: Impossibile aprire il file!" << '\n';
     return;
   }
-  
-  TCanvas *timegraph = new TCanvas("timegraph", "Ampiezza voltaggio in funzione del tempo", 800, 600);
-  
-  TGraph *time_graph_v_IN = new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
 
-  time_graph_v_IN->GetXaxis()->SetLimits(0.0017 , 0.0020 );
+  TCanvas *timegraph = new TCanvas(
+      "timegraph", "Ampiezza voltaggio in funzione del tempo", 800, 600);
 
-  TGraph *time_graph_v_R = new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
+  TGraph *time_graph_v_IN =
+      new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
+
+  time_graph_v_IN->GetXaxis()->SetLimits(0.0017, 0.0020);
+
+  TGraph *time_graph_v_R =
+      new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
 
   timegraph->SetGrid();
 
-  time_graph_v_IN->SetTitle("Ampiezza del voltaggio ai capi del generatore e della resistenza");
+  time_graph_v_IN->SetTitle(
+      "Ampiezza del voltaggio ai capi del generatore e della resistenza");
   time_graph_v_IN->SetLineColor(kBlue + 1);
   time_graph_v_IN->SetMarkerColor(kBlue + 1);
   time_graph_v_IN->SetLineWidth(2);
   time_graph_v_IN->SetMarkerStyle(20);
 
-  time_graph_v_R->SetLineColor(kRed +1);
-  time_graph_v_R->SetMarkerColor(kRed +1);
+  time_graph_v_R->SetLineColor(kRed + 1);
+  time_graph_v_R->SetMarkerColor(kRed + 1);
   time_graph_v_R->SetLineWidth(2);
   time_graph_v_R->SetMarkerStyle(20);
 
@@ -297,5 +364,4 @@ void time_graph(const std::string &file) {
   leg->Draw();
 
   timegraph->SaveAs("TimeGraph.pdf");
-  
 }
