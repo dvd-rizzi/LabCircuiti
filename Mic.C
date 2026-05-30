@@ -17,7 +17,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 
-void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
+void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
 {
     std::ifstream fin(filename);
 
@@ -69,13 +69,16 @@ void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
         &vvin[0]
     );
 
-    double x_min = 7500;
-    double x_max = 7700;
+    double x_min = 9900;
+    double x_max = 10100;
 
     double y_min = 0.;
-    double y_max = 0.1;
+    double y_max = 0.033;
 
+    gr_in->SetTitle("");
     gr_in->GetXaxis()->SetLimits(x_min, x_max);
+    gr_in->GetXaxis()->SetTitle("Frequenza (Hz)");
+    gr_in->GetYaxis()->SetTitle("Voltaggio (V)");
     gr_in->SetMinimum(y_min);
     gr_in->SetMaximum(y_max);
     
