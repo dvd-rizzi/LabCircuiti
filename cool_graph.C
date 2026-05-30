@@ -7,7 +7,7 @@ void cool_graph() {
     TGraph2D *proj_volt = new TGraph2D();
     TGraph2D *proj_fase = new TGraph2D();
 
-    std::ifstream infile("Grafico3D/Sweep1_330");
+    std::ifstream infile("Grafico3D/Sweep1_100");
     if (!infile.is_open()) {
         std::cerr << "Error: file not found!" << std::endl;
         return;
@@ -48,7 +48,7 @@ void cool_graph() {
         proj_fase->SetPoint(k, f, v_max, p);
     }
 
-    graph->SetTitle("Ampiezza e Fase in Frequenza;Frequenza (Hz);V_R (V);Phase (rad)");
+    graph->SetTitle(";Frequenza (Hz);Voltaggio (V);Fase (#circ)");
     graph->SetMarkerStyle(20);
     graph->SetMarkerSize(0.6);
 
@@ -59,6 +59,9 @@ void cool_graph() {
     proj_fase->SetMarkerStyle(20);
     proj_fase->SetMarkerSize(0.4);
     proj_fase->SetMarkerColor(kRed);
+
+    graph->GetXaxis()->SetTitleOffset(1.7); 
+    graph->GetYaxis()->SetTitleOffset(1.7);
 
     graph->Draw("P"); 
     proj_volt->Draw("P SAME");

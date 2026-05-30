@@ -212,6 +212,30 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   TGraphErrors *dataset2 = new TGraphErrors(p2.name, "%lg %*lg %lg %lg");
   TGraphErrors *dataset3 = new TGraphErrors(p3.name, "%lg %*lg %lg %lg");
 
+  std::vector<TGraphErrors *> datasets = {dataset1, dataset2, dataset3};
+
+  std::cout << "--- Analisi delle frequenza di notch ---" << std::endl;
+
+  for (size_t i = 0; i < datasets.size(); ++i) {
+    int n_punti = datasets[i]->GetN();
+    if (n_punti == 0)
+      continue;
+
+    double *x = datasets[i]->GetX();
+    double *y = datasets[i]->GetY();
+
+    int indice_min = TMath::LocMin(n_punti, y);
+
+    double freq_notch = x[indice_min];
+    double volt_min = y[indice_min];
+
+    std::cout << "Dataset [" << i << "]:" << std::endl;
+    std::cout << "  Frequenza di minimo: (" << freq_notch << ") Hz"
+              << std::endl;
+
+    std::cout << "--------------------------------------" << std::endl;
+  }
+
   TF1 *f1 = new TF1(
       "f1",
       "[5]*([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
@@ -257,23 +281,22 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   dataset2->SetMarkerStyle(20);
   dataset2->SetMarkerSize(0.1);
   dataset2->SetMarkerColorAlpha(kRed + 2, 0.6);
-  dataset2->SetLineColorAlpha(kOrange + 1, 0.6); 
+  dataset2->SetLineColorAlpha(kOrange + 1, 0.6);
   dataset2->SetLineWidth(1);
 
   dataset3->SetMarkerStyle(20);
   dataset3->SetMarkerSize(0.1);
   dataset3->SetMarkerColorAlpha(kGreen + 3, 0.6);
-  dataset3->SetLineColorAlpha(kSpring - 3, 0.6); 
+  dataset3->SetLineColorAlpha(kSpring - 3, 0.6);
   dataset3->SetLineWidth(1);
-
 
   f1->SetLineColor(kBlue + 2);
   f1->SetLineWidth(2);
 
-  f2->SetLineColor(kRed+2);
+  f2->SetLineColor(kRed + 2);
   f2->SetLineWidth(2);
 
-  f3->SetLineColor(kGreen+3);
+  f3->SetLineColor(kGreen + 3);
   f3->SetLineWidth(2);
 
   TCanvas *c_multi = new TCanvas("c_multi", "MultiFit", 800, 600);
@@ -295,8 +318,6 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   f2->Draw("SAME");
   f3->Draw("SAME");
 
-  
-
   TLegend *leg = new TLegend(0.70, 0.15, 0.88, 0.30);
 
   leg->AddEntry(dataset1, "R = 100 #Omega", "lp");
@@ -306,6 +327,11 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   leg->Draw();
 
   c_multi->SaveAs("multi_fit.pdf");
+
+  std::cout << "========VALORI FINALI CHI2 RIDOTTO========" << '\n';
+  std::cout << "100 O: " << f1->GetChisquare() / f1->GetNDF() << '\n';
+  std::cout << "330 O: " << f2->GetChisquare() / f2->GetNDF() << '\n';
+  std::cout << "560 O: " << f3->GetChisquare() / f3->GetNDF() << '\n';
 }
 
 void time_graph(const std::string &file) {

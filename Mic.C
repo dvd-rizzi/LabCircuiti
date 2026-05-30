@@ -17,7 +17,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 
-void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
+void Mic(const char* filename = "Dati_Mic/7.6kHz(20k_n_samples)")
 {
     std::ifstream fin(filename);
 
@@ -60,6 +60,8 @@ void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
 
     TCanvas* c = new TCanvas("c", "Circuit Graph", 900, 600);
 
+    c->SetGrid();
+
     // Grafico V_IN
     TGraph* gr_in = new TGraph(
         vfreq.size(),
@@ -67,18 +69,17 @@ void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
         &vvin[0]
     );
 
-    double x_min = 9900;
-    double x_max = 10100;
+    double x_min = 7500;
+    double x_max = 7700;
 
     double y_min = 0.;
-    double y_max = 0.035;
+    double y_max = 0.1;
 
     gr_in->GetXaxis()->SetLimits(x_min, x_max);
     gr_in->SetMinimum(y_min);
     gr_in->SetMaximum(y_max);
     
     
-    gr_in->SetTitle("V_{IN} e V_{R} vs Frequenza;Frequenza [Hz];Tensione [V]");
     gr_in->SetLineColor(kBlue + 1);
     gr_in->SetMarkerColor(kBlue + 1);
     gr_in->SetLineWidth(2);
@@ -99,7 +100,7 @@ void Mic(const char* filename = "Dati_Mic/10kHz(20k_n_samples)")
     
     gr_out->SetLineColor(kRed + 1);
     gr_out->SetMarkerColor(kRed + 1);
-    gr_out->SetLineWidth(2);
+    gr_out->SetLineWidth(1);
     gr_out->SetMarkerStyle(21);
 
     gr_in->Draw("ALP");
