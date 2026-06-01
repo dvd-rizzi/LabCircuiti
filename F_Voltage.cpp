@@ -303,7 +303,7 @@ void multifit(parameters p1, parameters p2, parameters p3) {
 
   c_multi->SetGrid();
 
-  dataset1->SetTitle("Confronto filtri notch");
+  dataset1->SetTitle("");
 
   dataset1->GetXaxis()->SetTitle("Frequenza (Hz)");
   dataset1->GetYaxis()->SetTitle("Voltaggio (V)");
@@ -334,60 +334,185 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   std::cout << "560 O: " << f3->GetChisquare() / f3->GetNDF() << '\n';
 }
 
-void time_graph(const std::string &file) {
-  std::vector<double> time_vec;
-  std::vector<double> v_IN_vec;
-  std::vector<double> v_R_vec;
-  double time;
-  double v_IN;
-  double v_R;
+// void time_graph(const std::string &file) {
+//   std::vector<double> time_vec;
+//   std::vector<double> v_IN_vec;
+//   std::vector<double> v_R_vec;
+//   double time;
+//   double v_IN;
+//   double v_R;
 
-  std::ifstream inputFile(file);
+//   std::ifstream inputFile(file);
 
-  if (inputFile.is_open()) {
-    while (inputFile >> time >> v_IN >> v_R) {
-      time_vec.push_back(time);
-      v_IN_vec.push_back(v_IN);
-      v_R_vec.push_back(v_R);
-    }
-    inputFile.close();
-  } else {
-    std::cerr << "Errore: Impossibile aprire il file!" << '\n';
+//   if (inputFile.is_open()) {
+//     while (inputFile >> time >> v_IN >> v_R) {
+//       time_vec.push_back(time);
+//       v_IN_vec.push_back(v_IN);
+//       v_R_vec.push_back(v_R);
+//     }
+//     inputFile.close();
+//   } else {
+//     std::cerr << "Errore: Impossibile aprire il file!" << '\n';
+//     return;
+//   }
+
+//   TCanvas *timegraph = new TCanvas(
+//       "timegraph", "Ampiezza voltaggio in funzione del tempo", 800, 600);
+
+//   TGraph *time_graph_v_IN =
+//       new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
+
+//   time_graph_v_IN->GetXaxis()->SetLimits(0.0017, 0.0020);
+
+//   TGraph *time_graph_v_R =
+//       new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
+
+//   timegraph->SetGrid();
+
+//   time_graph_v_IN->SetTitle(
+//       "Ampiezza del voltaggio ai capi del generatore e della resistenza");
+//   time_graph_v_IN->SetLineColor(kBlue + 1);
+//   time_graph_v_IN->SetMarkerColor(kBlue + 1);
+//   time_graph_v_IN->SetLineWidth(2);
+//   time_graph_v_IN->SetMarkerStyle(20);
+
+//   time_graph_v_R->SetLineColor(kRed + 1);
+//   time_graph_v_R->SetMarkerColor(kRed + 1);
+//   time_graph_v_R->SetLineWidth(2);
+//   time_graph_v_R->SetMarkerStyle(20);
+
+//   time_graph_v_IN->Draw("ALP");
+//   time_graph_v_R->Draw("LP SAME");
+
+//   TLegend *leg = new TLegend(0.7, 0.75, 0.88, 0.88);
+//   leg->AddEntry(time_graph_v_IN, "V_{IN}", "lp");
+//   leg->AddEntry(time_graph_v_R, "V_{R}", "lp");
+//   leg->Draw();
+
+//   timegraph->SaveAs("TimeGraph.pdf");
+// }
+
+double Phase_equation(double *x, double *par) {
+  double freq = x[0];
+    double Ri   = par[0]; 
+    double L    = par[1]; 
+    double C    = par[2]; 
+    double RL   = par[3]; 
+    double Rv   = par[4]; 
+
+    double omega = 2.0 * TMath::Pi() * freq;
+    double omega2 = omega * omega;
+    double Rsum = Rv + Ri; 
+
+    double resonance = 1.0 - omega2 * L * C;
+
+    double faseNum = TMath::ATan2(omega * RL * C, resonance);
+
+    double realDen = Rsum * resonance + RL;
+    double imagDen = omega * (L + Rsum * RL * C);
+    double faseDen = TMath::ATan2(imagDen, realDen);
+
+    return (faseNum - faseDen) * (180.0 / TMath::Pi());
+}
+
+void fitFase(parameters p) {
+
+  std::vector<double> f;
+  std::vector<double> phi;
+
+  std::ifstream in(p.name);
+  if (!in.is_open()) {
+    std::cerr << "Errore: impossibile aprire il file " << p.name << std::endl;
     return;
   }
 
-  TCanvas *timegraph = new TCanvas(
-      "timegraph", "Ampiezza voltaggio in funzione del tempo", 800, 600);
+  double col1, col2, col3, col4, col5;
 
-  TGraph *time_graph_v_IN =
-      new TGraph(time_vec.size(), &time_vec[0], &v_IN_vec[0]);
+  while (in >> col1 >> col2 >> col3 >> col4 >> col5) {
+    while (col5 > 180.0) {
+      col5 -= 360.0;
+    }
+    while (col5 < -180.0) {
+      col5 += 360.0;
+    }
+    f.push_back(col1);
+    phi.push_back(col5);
+  }
+  in.close();
 
-  time_graph_v_IN->GetXaxis()->SetLimits(0.0017, 0.0020);
+  int N = f.size();
+  if (N == 0) {
+    std::cerr << "Nessun dato letto dal file." << std::endl;
+    return;
+  }
 
-  TGraph *time_graph_v_R =
-      new TGraph(time_vec.size(), &time_vec[0], &v_R_vec[0]);
+  TGraph *gr = new TGraph(N, f.data(), phi.data());
 
-  timegraph->SetGrid();
+  gr->SetTitle("Differenza di fase;Frequenza [Hz];#Delta#phi [deg]");
+  gr->SetMarkerStyle(20);
 
-  time_graph_v_IN->SetTitle(
-      "Ampiezza del voltaggio ai capi del generatore e della resistenza");
-  time_graph_v_IN->SetLineColor(kBlue + 1);
-  time_graph_v_IN->SetMarkerColor(kBlue + 1);
-  time_graph_v_IN->SetLineWidth(2);
-  time_graph_v_IN->SetMarkerStyle(20);
+  TF1 *fit = new TF1("fit", Phase_equation, f.front(), f.back(), 5);
 
-  time_graph_v_R->SetLineColor(kRed + 1);
-  time_graph_v_R->SetMarkerColor(kRed + 1);
-  time_graph_v_R->SetLineWidth(2);
-  time_graph_v_R->SetMarkerStyle(20);
+  fit->SetParName(0, "R");
+  fit->SetParName(1, "L");
+  fit->SetParName(2, "C");
+  fit->SetParName(3, "R_L");
+  fit->SetParName(4, "R_v");
 
-  time_graph_v_IN->Draw("ALP");
-  time_graph_v_R->Draw("LP SAME");
+  fit->SetParameter(0, p.R);
+  fit->SetParameter(1, p.L);
+  fit->SetParameter(2, p.C);
+  fit->SetParameter(3, p.R_L);
+  fit->SetParameter(4, p.R_v);
 
-  TLegend *leg = new TLegend(0.7, 0.75, 0.88, 0.88);
-  leg->AddEntry(time_graph_v_IN, "V_{IN}", "lp");
-  leg->AddEntry(time_graph_v_R, "V_{R}", "lp");
-  leg->Draw();
+  fit->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
+  fit->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
 
-  timegraph->SaveAs("TimeGraph.pdf");
+  TCanvas *c = new TCanvas("c", "Fit Fase", 800, 600);
+
+  gr->Draw("AP");
+
+  gr->Fit(fit, "R S");
+
+  c->Update();
+
+  std::cout << "\n===== RISULTATI =====\n";
+
+  for (int i = 0; i < 5; i++) {
+    std::cout << fit->GetParName(i) << " = " << fit->GetParameter(i) << " +/- "
+              << fit->GetParError(i) << std::endl;
+  }
+
+  std::cout << "Chi2/NDF = " << fit->GetChisquare() << "/" << fit->GetNDF()
+            << std::endl;
+
+  c->SaveAs("PhaseFit.pdf");
+}
+
+void disegnaModello(parameters p) {
+  double fmin = 2000;
+  double fmax = 14000;
+
+  TF1 *modello = new TF1("modello", Phase_equation, fmin, fmax, 5);
+
+  modello->SetParameter(0, p.R);
+  modello->SetParameter(1, p.L);
+  modello->SetParameter(2, p.C);
+  modello->SetParameter(3, p.R_L);
+  modello->SetParameter(4, p.R_v);
+
+  modello->SetLineColor(kRed);
+  modello->SetLineWidth(3);
+  modello->SetTitle("Verifica Modello Teorico;Frequenza [Hz];#Delta#phi [deg]");
+
+  TCanvas *c_test = new TCanvas("c_test", "Test Modello", 800, 600);
+  c_test->SetGrid();
+
+  modello->Draw();
+
+  c_test->SaveAs("Phase.pdf");
+
+  std::cout << "--- Visualizzazione Modello ---" << std::endl;
+  std::cout << "R: " << p.R << " | L: " << p.L << " | C: " << p.C << std::endl;
+  std::cout << "R_L: " << p.R_L << " | R_v: " << p.R_v << std::endl;
 }
