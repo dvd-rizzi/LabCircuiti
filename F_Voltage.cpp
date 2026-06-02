@@ -299,6 +299,12 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   f3->SetLineColor(kGreen + 3);
   f3->SetLineWidth(2);
 
+  std::cout << "=============MINIMI DELLE FUNZIONI DI FIT=============" << '\n';
+  std::cout << "R1: " << f1->GetMinimumX() << '\n';
+  std::cout << "R2: " << f2->GetMinimumX() << '\n';
+  std::cout << "R3: " << f3->GetMinimumX() << '\n';
+
+
   TCanvas *c_multi = new TCanvas("c_multi", "MultiFit", 800, 600);
 
   c_multi->SetGrid();
