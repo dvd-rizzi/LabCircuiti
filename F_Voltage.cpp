@@ -214,28 +214,6 @@ void multifit(parameters p1, parameters p2, parameters p3) {
 
   std::vector<TGraphErrors *> datasets = {dataset1, dataset2, dataset3};
 
-  std::cout << "--- Analisi delle frequenza di notch ---" << std::endl;
-
-  for (size_t i = 0; i < datasets.size(); ++i) {
-    int n_punti = datasets[i]->GetN();
-    if (n_punti == 0)
-      continue;
-
-    double *x = datasets[i]->GetX();
-    double *y = datasets[i]->GetY();
-
-    int indice_min = TMath::LocMin(n_punti, y);
-
-    double freq_notch = x[indice_min];
-    double volt_min = y[indice_min];
-
-    std::cout << "Dataset [" << i << "]:" << std::endl;
-    std::cout << "  Frequenza di minimo: (" << freq_notch << ") Hz"
-              << std::endl;
-
-    std::cout << "--------------------------------------" << std::endl;
-  }
-
   TF1 *f1 = new TF1(
       "f1",
       "[5]*([0]*sqrt((1-(pow(2*pi*x,2))*[1]*[2])^2 + "
@@ -299,12 +277,6 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   f3->SetLineColor(kGreen + 3);
   f3->SetLineWidth(2);
 
-  std::cout << "=============MINIMI DELLE FUNZIONI DI FIT=============" << '\n';
-  std::cout << "R1: " << f1->GetMinimumX() << '\n';
-  std::cout << "R2: " << f2->GetMinimumX() << '\n';
-  std::cout << "R3: " << f3->GetMinimumX() << '\n';
-
-
   TCanvas *c_multi = new TCanvas("c_multi", "MultiFit", 800, 600);
 
   c_multi->SetGrid();
@@ -333,6 +305,63 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   leg->Draw();
 
   c_multi->SaveAs("multi_fit.pdf");
+
+  std::cout << "--------------------------------------" << std::endl;
+
+  std::cout << "=============FREQUENZA DI NOTCH DA DATI=============" << '\n';
+
+  for (size_t i = 0; i < datasets.size(); ++i) {
+    int n_punti = datasets[i]->GetN();
+    if (n_punti == 0)
+      continue;
+
+    double *x = datasets[i]->GetX();
+    double *y = datasets[i]->GetY();
+
+    int indice_min = TMath::LocMin(n_punti, y);
+
+    double freq_notch = x[indice_min];
+    double volt_min = y[indice_min];
+
+    std::cout << "Dataset [" << i << "]:" << std::endl;
+    std::cout << "  Frequenza di minimo: (" << freq_notch << ") Hz"
+              << std::endl;
+
+    std::cout << "--------------------------------------" << '\n';
+  }
+
+  std::cout << "=============FREQUENZA DI NOTCH DA FIT=============" << '\n';
+  std::cout << "R1: " << f1->GetMinimumX() << '\n';
+  std::cout << "R2: " << f2->GetMinimumX() << '\n';
+  std::cout << "R3: " << f3->GetMinimumX() << '\n';
+  std::cout << "--------------------------------------" << '\n';
+
+  auto Q_evaluate = [](TF1 *f, const char *nome_res) {
+    double f_notch = f->GetMinimumX(2000, 13000);
+
+    double v_baseline = f->Eval(2000);
+    double v_min = f->Eval(f_notch);
+
+    double v_cut = (v_baseline + v_min) / 2.0;
+
+    double f_left = f->GetX(v_cut, 2000, f_notch);
+    double f_right = f->GetX(v_cut, f_notch, 13000);
+
+    double delta_f = f_right - f_left;
+    double Q = f_notch / delta_f;
+
+    std::cout << "===========FATTORE DI QUALITÀ===========" << '\n';
+    std::cout << "Configurazione: " << nome_res << '\n';
+    std::cout << "  Frequenza di notch (f0) : " << f_notch << " Hz" << '\n';
+    std::cout << "  Larghezza di banda (df) : " << delta_f << " Hz" << '\n';
+    std::cout << "  Fattore Q (da fit)      : " << Q << '\n';
+    std::cout << "------------------------------------------------------"
+              << '\n';
+  };
+
+  Q_evaluate(f1, "R = 100 Ohm");
+  Q_evaluate(f2, "R = 330 Ohm");
+  Q_evaluate(f3, "R = 560 Ohm");
 
   std::cout << "========VALORI FINALI CHI2 RIDOTTO========" << '\n';
   std::cout << "100 O: " << f1->GetChisquare() / f1->GetNDF() << '\n';
@@ -400,25 +429,25 @@ void multifit(parameters p1, parameters p2, parameters p3) {
 
 double Phase_equation(double *x, double *par) {
   double freq = x[0];
-    double Ri   = par[0]; 
-    double L    = par[1]; 
-    double C    = par[2]; 
-    double RL   = par[3]; 
-    double Rv   = par[4]; 
+  double Ri = par[0];
+  double L = par[1];
+  double C = par[2];
+  double RL = par[3];
+  double Rv = par[4];
 
-    double omega = 2.0 * TMath::Pi() * freq;
-    double omega2 = omega * omega;
-    double Rsum = Rv + Ri; 
+  double omega = 2.0 * TMath::Pi() * freq;
+  double omega2 = omega * omega;
+  double Rsum = Rv + Ri;
 
-    double resonance = 1.0 - omega2 * L * C;
+  double resonance = 1.0 - omega2 * L * C;
 
-    double faseNum = TMath::ATan2(omega * RL * C, resonance);
+  double faseNum = TMath::ATan2(omega * RL * C, resonance);
 
-    double realDen = Rsum * resonance + RL;
-    double imagDen = omega * (L + Rsum * RL * C);
-    double faseDen = TMath::ATan2(imagDen, realDen);
+  double realDen = Rsum * resonance + RL;
+  double imagDen = omega * (L + Rsum * RL * C);
+  double faseDen = TMath::ATan2(imagDen, realDen);
 
-    return (faseNum - faseDen) * (180.0 / TMath::Pi());
+  return (faseNum - faseDen) * (180.0 / TMath::Pi());
 }
 
 void fitFase(parameters p) {
