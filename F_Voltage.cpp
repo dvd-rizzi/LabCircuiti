@@ -336,27 +336,59 @@ void multifit(parameters p1, parameters p2, parameters p3) {
   std::cout << "R3: " << f3->GetMinimumX() << '\n';
   std::cout << "--------------------------------------" << '\n';
 
+  // auto Q_evaluate = [](TF1 *f, const char *nome_res) {
+  //   double f_notch = f->GetMinimumX(2000, 13000);
+
+  //   double v_baseline = f->Eval(2000);
+  //   double v_cut = v_baseline / std::sqrt(2.0);
+
+  //   double f_left = f->GetX(v_cut, 2000, f_notch);
+  //   double f_right = f->GetX(v_cut, f_notch, 13000);
+
+  //   double delta_f = f_right - f_left;
+  //   double Q = f_notch / delta_f;
+
+  //   std::cout << "=========== FATTORE DI QUALITA' ===========\n";
+  //   std::cout << "Configurazione: " << nome_res << '\n';
+  //   std::cout << "  Frequenza di notch (f0) : " << f_notch << " Hz\n";
+  //   std::cout << "  Frequenza sinistra      : " << f_left << " Hz\n";
+  //   std::cout << "  Frequenza destra        : " << f_right << " Hz\n";
+  //   std::cout << "  Larghezza banda (df)    : " << delta_f << " Hz\n";
+  //   std::cout << "  Fattore Q (da fit)      : " << Q << '\n';
+  //   std::cout << "------------------------------------------------------\n";
+  // };
+
   auto Q_evaluate = [](TF1 *f, const char *nome_res) {
     double f_notch = f->GetMinimumX(2000, 13000);
 
-    double v_baseline = f->Eval(2000);
-    double v_min = f->Eval(f_notch);
+    double v_max = f->Eval(2000);    // baseline (approssimata)
+    double v_min = f->Eval(f_notch); // minimo notch
 
-    double v_cut = (v_baseline + v_min) / 2.0;
+    double v_cut = (v_max + v_min) / 2.0;
+
+    // controllo fisico
+    if (v_min > v_cut) {
+      std::cout << "[" << nome_res << "] notch troppo poco profondo\n";
+      return;
+    }
 
     double f_left = f->GetX(v_cut, 2000, f_notch);
     double f_right = f->GetX(v_cut, f_notch, 13000);
 
-    double delta_f = f_right - f_left;
-    double Q = f_notch / delta_f;
+    if (!std::isfinite(f_left) || !std::isfinite(f_right)) {
+      std::cout << "[" << nome_res << "] errore intersezioni\n";
+      return;
+    }
 
-    std::cout << "===========FATTORE DI QUALITÀ===========" << '\n';
+    double df = f_right - f_left;
+    double Q = f_notch / df;
+
+    std::cout << "=========== Q FWHM ===========\n";
     std::cout << "Configurazione: " << nome_res << '\n';
-    std::cout << "  Frequenza di notch (f0) : " << f_notch << " Hz" << '\n';
-    std::cout << "  Larghezza di banda (df) : " << delta_f << " Hz" << '\n';
-    std::cout << "  Fattore Q (da fit)      : " << Q << '\n';
-    std::cout << "------------------------------------------------------"
-              << '\n';
+    std::cout << "f0   = " << f_notch << " Hz\n";
+    std::cout << "df   = " << df << " Hz\n";
+    std::cout << "Q    = " << Q << '\n';
+    std::cout << "-----------------------------\n";
   };
 
   Q_evaluate(f1, "R = 100 Ohm");

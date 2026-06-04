@@ -4,30 +4,24 @@
 \usepackage{fullpage}
 \usepackage{amsfonts,amssymb,amsmath}
 \usepackage{float}
-\usepackage[most]{tcolorbox}
-\usepackage[dvipsnames]{xcolor}
 \numberwithin{equation}{section}
 \usepackage[italian]{babel}
-\usepackage{hyperref}
-\usepackage{mdframed}
 \usepackage{siunitx}
 \usepackage{enumerate}
 \usepackage{enumitem}
-\usepackage{cancel}
 \usepackage{accents}
 \usepackage{svg}
 \usepackage{mathtools}
 \usepackage[a4paper,margin=2cm]{geometry}
-\DeclarePairedDelimiter\angular{\langle}{\rangle}
-\DeclarePairedDelimiter\bigangular{\bigg\langle}{\bigg\rangle}
 \usepackage[thinc]{esdiff}
 \usepackage{caption}
 \usepackage{csquotes}
-\usepackage[backend=biber,style=numeric, sorting=none]{biblatex}
+\usepackage[style=numeric, sorting=none, backend=biber]{biblatex}
+\addbibresource{sample.bib}
 \setlength{\parindent}{15pt}
-\newcommand{\dd}{\mathrm{d}}
 \setlength{\parskip}{0pt}
 \usepackage{fontspec}
+\usepackage{hyperref}
 
 \setmainfont{Calibri}[
     Path = ./Fonts/,
@@ -46,42 +40,58 @@
 
 \maketitle
 
+
 \section{Abstract}
+
+Si vuole verificare il corretto funzionamento di un filtro notch RLC con frequenza di notch teorica di 7580 Hz. Sono fittati i dati sperimentali alla curva teorica dell'ampiezza di voltaggio in funzione della frequenza per 3 resistenze da 100 $\Omega$, 300 $\Omega$ e 560 $\Omega$, con un $\widetilde{\chi}^2$ risultante pari rispettivamente a 1.0304, 0.9936 e 0.9591 e frequenze di notch pari a 7607.41 Hz, 7675.66 Hz e 7705.36 Hz. Si mostra il funzionamento del filtro mediante l'acquisizione di segnali sonori a diverse frequenze, con conseguente smorzamento solo in corrispondenza della frequenza di abbattimento del notch.
 
 \section{Introduzione}
 
-Nell'esperienza di laboratorio è stato progettato un circuito notch (filtro elimina banda)  RLC serie e ne è stato verificato il comportamento atteso.
+Nell'esperienza di laboratorio è stato progettato un circuito notch (filtro elimina banda) RLC \cite{Perfetti} ed è stato verificato il corretto abbattimento del segnale di voltaggio ai capi della resistenza, in prossimità della frequenza di notch attesa. 
 
-Un circuito notch è un circuito elettronico che lascia passare tutte le frequenze, bloccandone o attenuandone solo una specifica [frase copiata da AI overview da modificare]. Nel circuito realizzato, la frequenza filtrata teorica era XXX.
+Il circuito notch analizzato sfrutta il fenomeno dell'antirisonanza di un gruppo LC parallelo posto in serie al carico. Alla frequenza di notch, le correnti che circolano nell'induttore e nel condensatore risultano uguali in modulo ma sfasate di $180^\circ$ tra loro, elidendosi reciprocamente nel nodo di giunzione. Questo annullamento delle correnti rende l'impedenza del blocco LC elevata, agendo come un "tappo" che ostacola il passaggio del segnale verso la resistenza di uscita $R_i$. Di conseguenza, la quasi totalità della tensione fornita dal generatore cade ai capi del gruppo risonante.
+
+Il circuito progettato è stato alimentato dall'FGen della Elvis, collegato al condensatore e all'induttore in parallelo. Questi sono stati collegati in serie con la resistenza, a sua volta collegata al ground.
+
+Le grandezze oggetto di studio sono state il modulo della funzione di voltaggio a 6 parametri (resistenza del circuito ($R$), resistenza del generatore ($R_V$), induttanza ($L$), resistenza dell'induttanza ($R_L$), capacità ($C$) e ampiezza del voltaggio del generatore $|V_0|$), il fattore di qualità ($Q$) e la frequenza di notch ($f_0$):
+
+\begin{equation}
+     |V(R)| =  |V_{0}| \frac{R \sqrt{(1-w^2LC)^2+(wCR_{L})^2}}{\sqrt{[(R_{V}+R)(1-w^2LC)+R_{L}]^2+\{w[L+CR_{L}(R_{V}+R)]\}^2}} \footnote{Per il calcolo completo, si veda l'Appendice~\ref{app:Dimostrazione}.}
+     \label{volt}
+\end{equation}
+
+
+\begin{equation*}
+    Q = R_{\text{tot}} \sqrt{\frac{C}{L}}= R_{\text{tot}}C\omega_0 \,\,\,\,\, (2.2)\label{Q} \qquad \quad f_0 = \frac{1}{2\pi}\sqrt{\frac{1}{LC}-\frac{R_L^2}{L^2}} \,\,\,\,\, (2.3) 
+\end{equation*}
+
 
 \section{Apparato sperimentale e svolgimento}
 
-L'apparato sperimentale utilizzato si compone di una scheda Elvis II, un multimetro digitale, un oscilloscopio, tre resistenze, un condensatore, un induttore, e un microfono.
-In particolare, si è fatto uso degli strumenti soft front panel della scheda Elvis II: NI Elvis II Digital Multimeter e NI Elvis II Function Generator. Il primo è stato usato per misurare valori di induttanza, capacità e resistenza, il secondo per generare onde sinusoidali. 
+L'apparato sperimentale utilizzato si compone di una scheda Elvis II, un multimetro digitale, un oscilloscopio, tre resistenze, un condensatore, un induttore e un microfono.
+In particolare, si è fatto uso degli strumenti soft front panel della scheda Elvis II: Digital Multimeter e Function Generator. Il primo per misurare valori di induttanza, capacità e resistenza, il secondo per generare onde sinusoidali in sweep. 
 I valori di capacità e induttanza sono stati scelti in modo che il grafico della frequenza fosse il più simmetrico possibile rispetto al notch.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{Images/circuit(2).png}
-    \caption{\textit{Schema del circuito notch. Sono riportati i valori di: resistenza interna del generatore ($R_v$), condensatore (C), induttore (L), resistenza interna dell'induttore ($R_L$), e di una delle resistenze utilizzate ($R_i$).}}
-    \label{fig:placeholder}
+    \caption{\textit{Schema del circuito notch. Sono riportati i valori di: resistenza interna del generatore ($R_v$), condensatore (C), induttore (L), resistenza interna dell'induttore ($R_L$), e di una delle resistenze ($R_i$).}}
+    \label{fig:schema}
 \end{figure}
 
 
-Inizialmente, è stato realizzato sulla breadboard Elvis II il circuito notch in figura 1. Come si può osservare, FGen è collegato al condensatore e all'induttore in parallelo. Questi sono collegati in serie con la resistenza, a sua volta collegata al ground. Sono stati utilizzati due canali di acquisizione, i cui canali negativi sono stati entrambi collegati al ground; uno dei canali positivi è stato collegato prima della resistenza e uno dopo il generatore. 
+Inizialmente, è stato realizzato sulla breadboard Elvis II il circuito notch descritto in introduzione e mostrato in figura \ref{fig:schema}. Sono stati utilizzati due canali di acquisizione, i cui canali negativi sono stati entrambi collegati al ground; uno dei canali positivi è stato collegato prima della resistenza e uno dopo il generatore. 
 
-E' stato osservato il comportamento del circuito con oscilloscopio da banco, usando function generator tramite sweep in frequenza, ed è stato verificato che vi fosse abbattimento dell'ampiezza del voltaggio intorno alla frequenza di notch.
-Per effettuare una successiva analisi, sono stati acquisiti tre set di dati durante sweep in frequenza: 1) l'ampiezza di voltaggio in funzione del tempo, 2) l'ampiezza di voltaggio in funzione della frequenza, e 3) la fase del voltaggio in funzione della frequenza.
+È stato osservato il comportamento del circuito con oscilloscopio da banco, usando function generator tramite sweep in frequenza, ed è stato verificato che vi fosse abbattimento dell'ampiezza del voltaggio intorno alla frequenza di notch.
+Per effettuare una successiva analisi, sono stati acquisiti tre set di dati durante lo sweep in frequenza: 1) l'ampiezza di voltaggio in funzione del tempo, 2) l'ampiezza di voltaggio in funzione della frequenza, e 3) la fase del voltaggio in funzione della frequenza.
 
 Infine, è stato sostituito il generatore di tensione sinusoidale con un microfono e sono stati acquisiti ulteriori dati per osservare l'abbattimento in corrispondenza della frequenza di notch. 
 L'input e il ground del microfono sono stati collegati rispettivamente ai 5 Volt e al ground della scheda Elvis, mentre l'output è stato collegato al resto del circuito in maniera analoga ad FGen.
 
 \section{Risultati e discussione}
 
-Nella tabella 1 sono riportati i valori nominali e misurati dal multimetro digitale della scheda Elvis del condensatore, dell'induttore, della resistenza interna dell'induttore, e di tre resistenze distinte \footnote{Per il calcolo delle incertezze associate alla misura delle resistenze mediante multimetro, si veda l'Appendice~\ref{app:Incertezze}.}.
-
-
-Il valore della frequenza filtrata teorica, dipendente dall'induttore e dal condensatore, era 7292.29 Hz, mentre il valore atteso calcolato a partire dai valori reali, e dipendente in aggiunta dalla resistenza interna dell'induttore, 7575.92 Hz.
+Nella tabella \ref{tab:valori} sono riportati i valori nominali e misurati dal multimetro digitale della scheda Elvis degli elementi circuitali\footnote{Per il calcolo delle incertezze associate alla misura delle resistenze mediante multimetro, si veda l'Appendice~\ref{app:Incertezze}.}.
+Il valore della frequenza filtrata teorica, dipendente dall'induttore e dal condensatore, era 7292.29 Hz, mentre il valore atteso, calcolato a partire dai valori reali e dipendente in aggiunta dalla resistenza interna dell'induttore, era 7580 Hz (Label Formula).  
 
 \begin{table}[H]
 \centering
@@ -103,95 +113,108 @@ Il valore della frequenza filtrata teorica, dipendente dall'induttore e dal cond
  \hline
 \end{tabular}
 \caption{\textit{Valori nominali e misurati dal multimetro della scheda Elvis del condensatore, dell'induttore, della resistenza interna dell'induttore, e di tre resistenze distinte.}}
+\label{tab:valori}
 \end{table}
 
 
-\begin{equation}
-    Q = \frac{1}{R} \sqrt{\frac{L}{C}}=\frac{1}{RC \omega_0}
-\end{equation}
+\subsection{Analisi quantitativa}
 
-
-\subsection{Fit}
-
-A partire dai set di dati ricavati, abbiamo potuto effettuare una serie di analisi al fine di  caratterizzare il comportamento del nostro circuito. 
+A partire dai set di dati ricavati, sono state effettuate una serie di analisi al fine di  caratterizzare il comportamento del nostro circuito. 
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{Images/3D_graph.pdf}
-    \caption{\textit{Grafico di dispersione del valore dell'ampiezza di voltaggio (V) e della differenza di fase ( $^{\circ}$) tra generatore e capi della resistenza in funzione della frequenza. Sul piano Hz-V, la linea blu indica l'andamento dell'ampiezza del voltaggio ai capi della resistenza in funzione della frequenza; sul piano Hz-$^{\circ}$ , è graficato in rosso l'andamento della differenza di fase tra il generatore e i capi della resistenza.}}
-    \label{fig:placeholder}
+    \caption{\textit{Grafico di dispersione del valore dell'ampiezza di voltaggio (V) (linea blu) e della differenza di fase ( $^{\circ}$) tra generatore e capi della resistenza (linea rossa) in funzione della frequenza (Hz). (R = 100 $\Omega$)}}
+    \label{fig:3d}
 \end{figure}
 
-Come si nota dal grafico (LABEL FIGURA), il valore dell'ampiezza del voltaggio subisce uno smorzamento attorno alla frequenza di notch per poi assestarsi a un valore di regime nelle code. Questo indica che il filtro è effettivamente selettivo attorno a una specifica frequenza. Come ci si aspetta, la fase subisce una rapida inversione in corrispondenza della frequenza di notch, per poi assestarsi a un valore in modulo uguale, ma con segno opposto a quello iniziale. Il grafico della differenza di fase, rispetto ad un modello ideale, risulta traslato verticalmente a causa di un offset dovuto alla non idealità del circuito.
+Come si nota dal grafico (Figura \ref{fig:3d}), il valore dell'ampiezza del voltaggio subisce uno smorzamento attorno alla frequenza di notch per poi assestarsi a un valore di regime nelle code. Questo denota una selettività del filtro attorno a una specifica frequenza. Come ci si aspetta, la fase subisce una rapida inversione in corrispondenza della frequenza di notch. Il grafico della differenza di fase, rispetto ad un modello ideale, risulta traslato verticalmente a causa di un offset dovuto alla non idealità del circuito.
 
-In un'ulteriore analisi dei dati abbiamo verificato la coerenza dei dati sperimentali raccolti, con il modello teorico atteso.
+Successivamente, è stata verificata la coerenza dei dati acquisiti con il modello teorico atteso.
+
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images/multi_fit.pdf}
-    \caption{Enter Caption}
-    \label{fig:placeholder}
+    \includegraphics[width=0.55\linewidth]{Images/multi_fit.pdf}
+    \caption{\textit{Grafici dei fit dell'ampiezza del voltaggio per resistenze di 100 $\Omega$ (blu), 330 $\Omega$ (rosso) e 560 $\Omega$ (verde). Con colore più scuro è graficata la funzione di fit; in chiaro sono graficate le barre di errore attorno ai punti sperimentali i cui marker sono stati resi semitrasparenti poichè troppo fitti per essere graficati senza sembrare un'ulteriore curva continua.}}
+    \label{fig:multifit}
 \end{figure}
-I dati raccolti sono stati fittati rispetto alla funzione dell'ampiezza del voltaggio ai capi della resistenza nel caso non ideale, quindi tenendo conto delle resistenze interne di generatore e induttore. La funzione di fit è la seguente:
 
-\begin{equation}
-    |V(R)| =  |V_{0}| \frac{R \sqrt{(1-w^2LC)^2+(wCR_{L})^2}}{\sqrt{[(R_{V}+R)(1-w^2LC)+R_{L}]^2+\{w[L+CR_{L}(R_{V}+R)]\}^2}} \footnote{Per il calcolo completo, si veda l'Appendice~\ref{app:Dimostrazione}.}
-\end{equation}
+I dati raccolti sono stati fittati rispetto alla funzione dell'ampiezza del voltaggio ai capi della resistenza nel caso non ideale, per le tre configurazioni di resistenza (figura \ref{fig:multifit}). La funzione di fit è la \eqref{volt}. 
 
-La funzione presenta 6 parametri: resistenza del circuito ($R$), resistenza del generatore ($R_V$), induttanza ($L$), resistenza dell'induttanza ($R_L$), capacità ($C$) e ampiezza del voltaggio del generatore $|V_0|$. 
+\begin{table}[H]
+\centering
+\begin{tabular}{|| c | c | c | c ||} 
+ \hline
+  & Freq. Teorica (Hz) & Freq. Reale (Hz) & Freq. Fit (Hz)\\ [0.5ex] 
+ \hline\hline
+ $R_1$ & 7580 $\pm$ 77 & 7565.08 & 7607.41\\
+ \hline
+ $R_2$ & 7580 $\pm$ 77 & 7640.15 & 7675.66\\ 
+ \hline
+ $R_3$ & 7580 $\pm$ 77 & 7670.14 & 7705.36\\
+ \hline
+\end{tabular}
+\caption{\textit{Per ogni configurazione di resistenza sono riportati: frequenza teorica di notch nel caso reale con associata incertezza massima \cite{Taylor}, frequenza reale di notch ricavata come frequenza corrispondente al dato con voltaggio minore e la frequenza di notch della curva di fit (ricavata come ascissa del minimo).}}
+\label{tab:freq}
+\end{table}
+
+Osservando i grafici di fit (figura \ref{fig:multifit}) è possibile osservare degli effetti sistematici. Il primo riguarda lo shift della frequenza di notch quantificato in tabella \ref{tab:freq}; il secondo riguarda l'asimmetria delle code rispetto ai punti acquisiti. Entrambi gli effetti sono riconducibili a due fattori fondamentali. Il primo è la non idealità del circuito; il secondo è dovuto a effetti parassiti del multiplexer della Elvis in fase di sweep.
+
+Per fittare i dati alla funzione teorica, è stata inizialmente associata alle misure di tensione un'incertezza pari alla deviazione standard del rumore elettronico di fondo, misurata in condizioni di stabilità ($V_{cost} = 5\text{ V}$). Con questo metodo, l'incertezza stimata è risultata pari a $0.5\text{ mV}$ (o $1.5\text{ mV}$ con fattore di copertura $k=3$). Tuttavia, il fit eseguito con tali incertezze ha restituito un $\widetilde{\chi}^2 \approx 100$; tale valore, significativamente superiore all'unità, ha suggerito una sottostima sistematica dell'incertezza sperimentale, indicando che il rumore puramente elettronico non fosse l'unico contributo alla dispersione dei dati. 
+
+Osservando i grafici, si è dedotto che l'elevato valore del $\widetilde{\chi}^2$ non fosse imputabile a un'inadeguatezza del modello teorico, bensì alla sottostima delle incertezze. Si è dunque proseguito assumendo la validità del modello fisico e applicando un'analisi a posteriori delle incertezze basata sullo studio dei residui \cite{Montgomery}. Ipotizzando che i dati sperimentali fluttuino in modo gaussiano attorno alla curva teorica, l'incertezza $\sigma$ è stata ricavata come deviazione standard dei residui normalizzata per i gradi di libertà:\begin{equation*}\sigma = \sqrt{\frac{1}{N-p}\sum_{i=1}^N(V_i - f(x_i))^2}\end{equation*}dove $N$ è il numero di punti, $p$ il numero di parametri del modello, $V_i$ il valore di tensione misurato e $f(x_i)$ il valore restituito dal fit nel punto $i$-esimo. Tale procedura ha permesso di effettuare un fit, considerando i parametri in tabella \ref{tab:valori} e di ottenere un risultato consistente con il modello teorico (tabella \ref{tab:chi2}).
 
 \begin{table}[H]
 \centering
 \begin{tabular}{||c | c | c | c | c | c ||} 
  \hline
-  & Valore Nominale ($\Omega$) & Valore da Fit ($\Omega$)& Freq. Teorica (Hz) & Freq. Reale (Hz) & $\widetilde{\chi}^2$ \\ [0.5ex] 
+   & Valore resistenza da Fit ($\Omega$)& $\sigma$ (mV) & $\widetilde{\chi}^2$ & $Q$ teorico & $Q$ reale \\ [0.5ex] 
  \hline\hline
- $R_{1}$ & 100 &  99.9 $\pm$ 0.6 & 7575.92 $\pm$ err. & 7565.08 & 1.0304\\
+ $R_{1}$ &  99.9 $\pm$ 0.6 & 15  & 1.0304 & 6.48 $\pm$ 0.05 & 5.11974 \\
  \hline
- $R_{2}$ & 330 &  330.6 $\pm$ 1.8 & 7575.92 & 7640.15 & 0.9936\\ 
+ $R_{2}$ &  330.6 $\pm$ 1.8 & 13 & 0.9936 & 16.33 $\pm$ 0.12 & 7.32575 \\ 
  \hline
- $R_{3}$ & 560 & 560 $\pm$ 3 & 7575.92 & 7670.14 & 0.9591\\
+ $R_{3}$ & 560 $\pm$ 3 & 10 & 0.9591 & 26.20 $\pm$ 0.20 & 8.24117 \\
  \hline
 \end{tabular}
-\caption{\textit{Valori del Chi2 ridotto nelle diverse configurazioni di resistenza del filtro. La frequenza teorica è calcolata mediante formula (nel caso reale) sulla base dei valori reali delle componenti del circuito e l'incertezza associata è massima. La frequenza reale è ricavata dai dati sperimetali come il valore di frequenza del punto con ampiezza di voltaggio minore.}}
-\label{tab:risultati_notch}
+\caption{\textit{Per ogni configurazione di resistenza sono riportati: valore ricavato mediante fit, incertezza associata alle misure di voltaggio in fase di fit, il chi2 ridotto e il fattore di qualità teorico con incertezza massima \cite{Taylor}e il fattore di qualità stimato dai dati a partire dai dati raccolti.}}
+\label{tab:chi2}
 \end{table}
 
+Come da modello teorico, all'aumentare della resistenza aumenta anche il fattore di qualità del circuito, rendendo il grafico maggiormente piccato in corrispondenza della frequenza di notch come si può osservare da figura \ref{fig:multifit}. Il fattore di qualità reale è stato calcolato come il rapporto tra la frequenza di risonanza calcolata dal fit e l'ampezza a metà altezza del grafico. Si osserva inoltre che, nonostante l'aumento della pendenza nel caso ad alto fattore di qualità ($560\ \Omega$), la sigma a posteriori del fit diminuisce ($10\text{ mV}$ contro i $15\text{ mV}$ del caso a $100\ \Omega$). Ciò indica che la profondità del notch nel caso a bassa resistenza rende il sistema più sensibile alle non-idealità dei componenti (come la resistenza parassita dell'induttore), che introducono discrepanze sistematiche rispetto al modello teorico, riflettendosi in un errore residuo maggiore. 
 
-\subsection{Microfono}
+\subsection{Analisi qualitativa}
 
 \begin{figure}[H]
     \makebox[\textwidth][c]{
-        \begin{minipage}{0.38\textwidth}
+        \begin{minipage}{0.50\textwidth}
             \centering
             \includegraphics[width=\linewidth]{Images/Mic(2).pdf}
             \label{fig:1}
         \end{minipage}\hfill
-        \begin{minipage}{0.38\textwidth}
+        \begin{minipage}{0.50\textwidth}
             \centering
             \includegraphics[width=\linewidth]{Images/Mic(7.6).pdf}
             \label{fig:2}
         \end{minipage}\hfill
-        \begin{minipage}{0.38\textwidth}
-            \centering
-            \includegraphics[width=\linewidth]{Images/Mic(10).pdf}
-            \label{fig:3}
-        \end{minipage}
     }
-    \caption{.}
+    \caption{\textit{Grafici di output della FFT di voltaggio in funzione della frerquenza. In blu l'ampiezza del voltaggio ai capi del del generatore mentre in rosso quella ai capi della resisteza (quindi soggetta al filtro notch). Il primo grafico vedeva in input un segnale sonoro a 2kHz; il secondo a 7.6kHz.}}
+    \label{figu:mic}
 \end{figure}
 
-Foto microfono a 7600, 2000, 10000 per confrontare
+Per verificare il funzionamento del filtro in un'applicazione pratica, è stato utilizzato un microfono. Sono stati dati in input al microfono una serie di segnali acustici a diverse frequenze che il programma ha graficato come picchi in un grafico frequenza-voltaggio a seguito di una trasformata di Fourier.
+
+Si è potuto osservare un abbattimento in corrispondenza della frequenza di notch del segnale filtrato rispetto all'input ed una coerenza per frequenze distanti da quella di abbattimento (figura \ref{figu:mic}).
 
 \section{Conclusioni}
 
-Non faremo fisica sperimentale.
+Il circuito ideato ha mostrato un comportamento coerente con il modello teorico. I dati sperimentali fittano alla curva attesa con $\chi^2$ ridotto prossimo a 1 ed incertezze relative inferiori al 5\%.
+In conclusione, concludiamo concludendo la conclusione della conclusione.
 
-\section{Bibliografia}
-Taylor, Prop Errori
-Treccani
-Libro di onde a caso
+\printbibliography
 
+\newpage
 \section{Appendice}
 
 \subsection{Incertezze Resistenze}
@@ -199,12 +222,12 @@ Libro di onde a caso
 L'eq. 7.1 riporta il calcolo dell'incertezza associata ai valori di resistenza mediante multimetro della scheda Elvis II. Nella tabella 2 sono riportati i valori di range, errore sulla lettura e di fondo scala, per le corrispettive resistenze.
 
 \begin{equation}
-    Incertezza = \pm \left(\frac{Lettura*ppm_{Lettura}}{10^6}+\frac{Range*ppm_{Range}}{10^6}\right)
+    Incertezza = \pm \left(\frac{Lettura\cdot ppm_{Lettura}}{10^6}+\frac{Range\cdot ppm_{Range}}{10^6}\right)
 \end{equation}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{||c | c || c ||} 
+\begin{tabular}{||c | c | c ||} 
  \hline
  Range & ppm della Lettura + ppm del Range  & Resistenze \\ [0.5ex] 
  \hline\hline
@@ -213,19 +236,12 @@ L'eq. 7.1 riporta il calcolo dell'incertezza associata ai valori di resistenza m
  1 k$\Omega$ & 450 + 100 & 330 $\Omega$, 560 $\Omega$\\ 
  \hline
 \end{tabular}
+\label{tab:res}
 \caption{\textit{Estratto del manuale della scheda Elvis II. Sono riportati i valori di range, errore su lettura (ppm della Lettura) e di fondo scala (ppm del Range), e le corrispettive resistenze afferenti al range.}}
 \end{table}
 
- A titolo esemplificativo, l'errore associato alla resistenza di 100 $\Omega$ è stato calcolato come:
-
-\begin{equation}
-    Incertezza_{100 \Omega} = \pm \left(\frac{450*100.31}{10^6}+\frac{310*100}{10^6}\right)
-\end{equation}
-
 \subsection{Equazione Fit}
 \label{app:Dimostrazione}
-\noindent Sono riportati i calcoli dell'eq. XXX
-
 
 \begin{equation}
 \begin{split}
@@ -250,6 +266,5 @@ L'eq. 7.1 riporta il calcolo dell'incertezza associata ai valori di resistenza m
     \text{Prendendone il modulo,} \quad
     |V(R)| =  |V_{0}| \frac{R \sqrt{(1-w^2LC)^2+(wCR_{L})^2}}{\sqrt{[(R_{V}+R)(1-w^2LC)+R_{L}]^2+\{w[L+CR_{L}(R_{V}+R)]\}^2}}
 \end{equation}
-
 
 \end{document}
