@@ -44,3 +44,5 @@ void time_graph(const std::string &file);
 void fitFase(parameters p);
 
 void disegnaModello(parameters p);
+
+double Phase_equation(double *x, double *par);

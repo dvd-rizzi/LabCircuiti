@@ -123,15 +123,52 @@ void v_fit(parameters p) {
   std::cout << "Chi2/NDF = "
             << v_function->GetChisquare() / v_function->GetNDF() << '\n';
 
-  dataset->Draw("APE");
-  dataset->SetLineColor(4);
-  dataset->SetMarkerColor(4);
-  v_function->Draw("same");
-  dataset->SetTitle("Fit Ampiezza del Voltaggio");
+  c3->SetGrid();
+  c3->SetTicks();
+
+  gStyle->SetEndErrorSize(0);
+
+  dataset->SetTitle("");
+
   dataset->GetXaxis()->SetTitle("Frequenza (Hz)");
   dataset->GetYaxis()->SetTitle("Voltaggio (V)");
+
   dataset->GetXaxis()->CenterTitle(true);
   dataset->GetYaxis()->CenterTitle(true);
+
+  dataset->SetMarkerStyle(20);
+  dataset->SetMarkerSize(0.1);
+  dataset->SetMarkerColor(kBlue + 2);
+
+  dataset->SetLineColorAlpha(kCyan - 4, 0.3);
+  dataset->SetLineWidth(1);
+
+  v_function->SetLineColor(kRed + 1);
+  v_function->SetLineWidth(2);
+
+  dataset->Draw("AP");
+
+  v_function->Draw("SAME");
+
+  dataset->Draw("P SAME");
+
+  TGraphErrors *dot = new TGraphErrors();
+
+  dot->SetMarkerStyle(20);
+  dot->SetMarkerColor(kBlue + 2);
+
+  TLegend *leg = new TLegend(0.65, 0.15, 0.88, 0.28);
+
+  leg->AddEntry(dot, "Dato sperimentale", "p");
+  leg->AddEntry(v_function, "Curva di fit", "l");
+
+  // leg->SetBorderSize(0);
+  // leg->SetFillStyle(0);
+  leg->SetTextSize(0.03);
+
+  leg->Draw();
+
+  c3->Update();
 
   c3->SaveAs("v_function_fit.pdf");
 }
@@ -461,22 +498,22 @@ void multifit(parameters p1, parameters p2, parameters p3) {
 
 double Phase_equation(double *x, double *par) {
   double freq = x[0];
-  double Ri = par[0];
+  double R = par[0];
   double L = par[1];
   double C = par[2];
-  double RL = par[3];
-  double Rv = par[4];
+  double R_L = par[3];
+  double R_v = par[4];
 
   double omega = 2.0 * TMath::Pi() * freq;
   double omega2 = omega * omega;
-  double Rsum = Rv + Ri;
+  double Rsum = R_v + R;
 
   double resonance = 1.0 - omega2 * L * C;
 
-  double faseNum = TMath::ATan2(omega * RL * C, resonance);
+  double faseNum = TMath::ATan2(omega * R_L * C, resonance);
 
-  double realDen = Rsum * resonance + RL;
-  double imagDen = omega * (L + Rsum * RL * C);
+  double realDen = Rsum * resonance + R_L;
+  double imagDen = omega * (L + Rsum * R_L * C);
   double faseDen = TMath::ATan2(imagDen, realDen);
 
   return (faseNum - faseDen) * (180.0 / TMath::Pi());
@@ -533,7 +570,7 @@ void fitFase(parameters p) {
   fit->SetParameter(4, p.R_v);
 
   fit->SetParLimits(0, p.R - p.R * 0.05, p.R + p.R * 0.05);
-  fit->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R + p.R_v * 0.05);
+  fit->SetParLimits(4, p.R_v - p.R_v * 0.05, p.R_v + p.R_v * 0.05);
 
   TCanvas *c = new TCanvas("c", "Fit Fase", 800, 600);
 
